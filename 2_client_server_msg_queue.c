@@ -1,4 +1,4 @@
-# Server
+// Server
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +43,7 @@ int main()
 
 
 
-# Client 
+// Client 
 
 #include <stdio.h>
 #include <stdlib.h>
