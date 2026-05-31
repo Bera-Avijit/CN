@@ -31,7 +31,7 @@ int main()
     printf("Message from Client: %s\n", recv.mtext);
 
     printf("Enter reply for Client: ");
-    scanf("%s", send.mtext);
+    scanf("%[^\n]s", send.mtext);
 
     send.mtype = 2;
 
@@ -72,7 +72,7 @@ int main()
     }
 
     printf("Enter message for Server: ");
-    scanf("%s", send.mtext);
+    scanf("%[^\n]s", send.mtext);
 
     send.mtype = 1;
 
