@@ -1,57 +1,45 @@
 // Server
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
 
-int main()
-{
-    int serv_sockfd, cli_sockfd;
+int main(){
+    int serv_sock, cli_sock;
     int serv_len, cli_len;
-
-    struct sockaddr_in serv_address, cli_addr;
-
     char a[100], b[100];
 
-    serv_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    serv_sock = socket(AF_INET, SOCK_STREAM, 0);
 
-    serv_address.sin_family = AF_INET;
-    serv_address.sin_port = 9002;
-    serv_address.sin_addr.s_addr = inet_addr("127.0.0.1");
+    struct sockaddr_in serv_addr, cli_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(9001);
+    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    serv_len = sizeof(serv_address);
+    serv_len = sizeof(serv_addr);
+    
+    bind(serv_sock, (struct sockaddr *)&serv_addr, serv_len);
 
-    bind(serv_sockfd, (struct sockaddr *)&serv_address, serv_len);
-
-    listen(serv_sockfd, 5);
-
-    while(1)
-    {
-        printf("Server is waiting...\n");
-
-        cli_len = sizeof(cli_addr);
-
-        cli_sockfd = accept(serv_sockfd,
-                           (struct sockaddr *)&cli_addr,
-                           &cli_len);
-
-        read(cli_sockfd, a, sizeof(a));
-
-        printf("Reading message from client...\n");
-        puts(a);
-
-        printf("Enter message for client: ");
+    listen(serv_sock, 5);
+    printf("Server Waiting !!\n");
+    
+    cli_len = sizeof(cli_addr);
+    cli_sock = accept(serv_sock, (struct sockaddr *)&cli_addr, &cli_len);
+    printf("Client Connected !!\n");
+    while(1){
+        read(cli_sock, a, sizeof(a));
+        printf("Client : %s\n", a);
+        printf("Server : ");
         gets(b);
-
-        write(cli_sockfd, b, sizeof(b));
-
-        close(cli_sockfd);
+        write(cli_sock, b, sizeof(b));
     }
+    close(serv_sock);
+    close(cli_sock);
 
     return 0;
 }
@@ -59,55 +47,45 @@ int main()
 
 // Client
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
 
-int main()
-{
-    int sockfd, len, result;
+int main(){
+    int sock, len, result;
+    char a[100], b[100];
 
-    struct sockaddr_in address;
+    sock = socket(AF_INET, SOCK_STREAM, 0);
 
-    char name[100], reply[100];
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(9001);
+    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    address.sin_family = AF_INET;
-    address.sin_port = 9002;
-    address.sin_addr.s_addr = inet_addr("127.0.0.1");
+    len = sizeof(addr);
 
-    len = sizeof(address);
-
-    while(1)
+    result = connect(sock, (struct sockaddr *)&addr, len);
+    if(result == -1)
     {
-        sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
-        result = connect(sockfd,
-                         (struct sockaddr *)&address,
-                         len);
-
-        if(result == -1)
-        {
-            perror("Connection Failed");
-            exit(1);
-        }
-
-        printf("Enter message: ");
-        gets(name);
-
-        write(sockfd, name, sizeof(name));
-
-        read(sockfd, reply, sizeof(reply));
-
-        printf("Server Reply: ");
-        puts(reply);
-
-        close(sockfd);
+        perror("Unable to connect");
+        exit(1);
     }
+
+    printf("Server Connected !!\n");
+
+    while(1){
+        printf("Client : ");
+        gets(a);
+        write(sock, a, sizeof(a));
+        read(sock, b, sizeof(b));
+        printf("Server : %s\n", b);
+    }
+    close(sock);
 
     return 0;
 }
