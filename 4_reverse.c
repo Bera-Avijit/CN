@@ -1,58 +1,49 @@
 // Server
 
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
 
 #define MAX 20
 #define PORT 5777
 
-int main()
-{
+int main(){
     int sfd, cfd, i, j, n;
-
-    char msg[MAX], rev[MAX];
-
-    struct sockaddr_in saddr, caddr;
+    char msg[100], rev[100];
 
     sfd = socket(AF_INET, SOCK_STREAM, 0);
 
+    struct sockaddr_in saddr, caddr;
     bzero(&saddr, sizeof(saddr));
-
     saddr.sin_family = AF_INET;
     saddr.sin_port = htons(PORT);
 
-    bind(sfd, (struct sockaddr*)&saddr, sizeof(saddr));
-
+    bind(sfd, (struct sockaddr *)&saddr, sizeof(saddr));
     listen(sfd, 1);
 
     cfd = accept(sfd, NULL, NULL);
 
-    printf("Connected to Client\n");
+    printf("Client Connected !!\n");
 
-    while(1)
-    {
-        n = read(cfd, msg, MAX);
-
-        if(n <= 0)
+    while(1){
+        n = read(cfd, msg, sizeof(msg));
+        if(n<=0)
             break;
-
         msg[n] = '\0';
 
-        for(i = n - 1, j = 0; i >= 0; i--, j++)
-        {
+        for(i=n-1,j=0; i>=0; i--,j++){
             rev[j] = msg[i];
         }
-
         rev[j] = '\0';
-
         write(cfd, rev, strlen(rev));
     }
-
-    close(cfd);
     close(sfd);
+    close(cfd);
 
     return 0;
 }
@@ -60,43 +51,43 @@ int main()
 
 // Client
 
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
 
 #define MAX 20
 #define PORT 5777
 
-int main()
-{
-    int cfd;
+int main(){
+    int sockfd;
+    char msg[100], rev[100];
 
-    char msg[MAX], rev[MAX];
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-    struct sockaddr_in saddr;
+    struct sockaddr_in addr;
+    bzero(&addr, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(PORT);
 
-    cfd = socket(AF_INET, SOCK_STREAM, 0);
+    connect(sockfd, (struct sockaddr *)&addr, sizeof(addr));
 
-    bzero(&saddr, sizeof(saddr));
-
-    saddr.sin_family = AF_INET;
-    saddr.sin_port = htons(PORT);
-
-    connect(cfd, (struct sockaddr*)&saddr, sizeof(saddr));
-
-    printf("Enter String: ");
+    printf("Enter str : ");
 
     fgets(msg, MAX, stdin);
 
-    write(cfd, msg, strlen(msg));
+    write(sockfd, msg, strlen(msg));
 
-    read(cfd, rev, MAX);
+    int n = read(sockfd, rev, sizeof(rev));
+    rev[n] = '\0';
 
     printf("Reversed String: %s\n", rev);
-
-    close(cfd);
+    
+    close(sockfd);
 
     return 0;
 }
